@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>jerameyjames.os</title>
+  <meta name="description" content="Technical founder. Crescent City, PNW. Building infrastructure for local intelligence.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        fontFamily: { mono: ['JetBrains Mono', 'monospace'] },
+        extend: {
+          colors: {
+            bg:       '#0A0A0A',
+            surface:  '#111111',
+            fg:       '#E5E5E5',
+            dim:      '#888888',
+            dimmer:   '#555555',
+            line:     '#333333',
+            rust:     '#c2410c',
+            'rust-hi':'#dc5a1f',
+            green:    '#4af626',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    *, *::before, *::after {
+      font-family: 'JetBrains Mono', monospace !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: #0A0A0A; color: #E5E5E5; -webkit-font-smoothing: antialiased; }
+
+    /* Blinking cursor */
+    @keyframes blink { 0%,49% { opacity:1; } 50%,100% { opacity:0; } }
+    .cursor { animation: blink 1s step-start infinite; color: #c2410c; }
+
+    /* Pulsing status dot */
+    @keyframes dot-pulse { 0%,100% { opacity:1; } 50% { opacity:0.35; } }
+    .dot { display:inline-block; width:6px; height:6px; background:#4af626; animation:dot-pulse 2.4s ease-in-out infinite; flex-shrink:0; }
+
+    /* Hero grid background */
+    .hero-grid {
+      background-image:
+        linear-gradient(rgba(51,51,51,0.25) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(51,51,51,0.25) 1px, transparent 1px);
+      background-size: 48px 48px;
+    }
+
+    /* Terminal chrome dots */
+    .term-dot { width:8px; height:8px; border:1px solid #333333; display:inline-block; }
+
+    /* Ghost button [ ] brackets */
+    .ghost:hover::before { content:'[ '; color:#c2410c; }
+    .ghost:hover::after  { content:' ]'; color:#c2410c; }
+
+    /* Data row */
+    .kv { display:flex; justify-content:space-between; align-items:center; padding:9px 0; border-bottom:1px dashed #333333; gap:12px; }
+    .kv:last-child { border-bottom:none; }
+    .kv-label { color:#888888; font-size:11px; text-transform:uppercase; letter-spacing:0.1em; white-space:nowrap; }
+    .kv-val   { color:#E5E5E5; font-size:12px; text-align:right; }
+
+    /* Input reset */
+    input { background:transparent; outline:none; border:none; color:#E5E5E5; width:100%; }
+    input::placeholder { color:#555555; }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:3px; }
+    ::-webkit-scrollbar-track { background:#0A0A0A; }
+    ::-webkit-scrollbar-thumb { background:#333333; }
+
+    /* Section comment label */
+    .sec-label { font-size:11px; color:#888888; text-transform:uppercase; letter-spacing:0.15em; }
+
+    /* Throughput fill */
+    .bar-fill { height:100%; background:#c2410c; width:72%; }
+
+    /* Writing row hover */
+    .log-row { display:flex; align-items:center; gap:16px; padding:14px 16px; border-bottom:1px dashed #333333; cursor:pointer; transition:background 0.1s; }
+    .log-row:last-child { border-bottom:none; }
+    .log-row:hover { background:#111111; }
+
+    /* Nav link */
+    .nav-a { font-size:12px; color:#888888; text-decoration:none; transition:color 0.1s; }
+    .nav-a:hover { color:#E5E5E5; }
+
+    /* Pill */
+    .pill-online { display:flex; align-items:center; gap:6px; border:1px solid #333333; padding:3px 8px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     STICKY HEADER
+═══════════════════════════════════════════ -->
+<header style="position:sticky;top:0;z-index:50;background:#0A0A0A;border-bottom:1px solid #333333;">
+  <div style="max-width:1200px;margin:0 auto;padding:0 24px;height:48px;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+
+    <!-- Monogram + breadcrumb -->
+    <div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">
+      <div style="width:28px;height:28px;border:1px solid #333333;display:flex;align-items:center;justify-content:center;">
+        <span style="color:#c2410c;font-size:11px;font-weight:700;line-height:1;">&gt;_</span>
+      </div>
+      <span style="color:#888888;font-size:12px;display:none;" class="sm-show">~/jeramey_james.os</span>
+    </div>
+
+    <!-- Nav -->
+    <nav style="display:flex;align-items:center;gap:24px;">
+      <a href="#about"   class="nav-a">about</a>
+      <a href="#work"    class="nav-a">work</a>
+      <a href="#writing" class="nav-a">writing</a>
+      <a href="#contact" class="nav-a">contact</a>
+    </nav>
+
+    <!-- Status pill -->
+    <div class="pill-online" style="flex-shrink:0;">
+      <span class="dot"></span>
+      <span style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;">STATUS: ONLINE</span>
+    </div>
+
+  </div>
+</header>
+<style>@media(min-width:640px){.sm-show{display:block!important;}}</style>
+
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero-grid" style="min-height:100vh;display:flex;align-items:center;padding:96px 24px 80px;">
+  <div style="max-width:1200px;margin:0 auto;width:100%;">
+
+    <!-- Status line -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:6px 24px;margin-bottom:48px;font-size:12px;color:#888888;">
+      <span style="display:flex;align-items:center;gap:6px;"><span class="dot"></span> live</span>
+      <span>process: <span style="color:#E5E5E5;">mon-wed-fri</span></span>
+      <span>last_ship: <span style="color:#E5E5E5;">2d ago</span></span>
+      <span>rev: <span style="color:#E5E5E5;">2026.04</span></span>
+    </div>
+
+    <!-- Wordmark -->
+    <div style="margin-bottom:32px;line-height:1.7;">
+      <div style="font-size:15px;color:#888888;">~/jeramey_james</div>
+      <div style="font-size:15px;color:#E5E5E5;display:flex;align-items:center;gap:6px;">
+        <span style="color:#555555;">└─</span>
+        <span>jerameyjames.os</span><span class="cursor">▊</span>
+      </div>
+    </div>
+
+    <!-- Headline -->
+    <h1 style="font-size:clamp(42px,8vw,80px);font-weight:700;color:#E5E5E5;line-height:1.05;margin-bottom:24px;letter-spacing:-0.02em;">
+      systems,<br>not willpower.
+    </h1>
+
+    <!-- Positioning -->
+    <p style="font-size:14px;color:#888888;max-width:520px;line-height:1.75;margin-bottom:36px;">
+      Technical founder. Crescent City, PNW. Building infrastructure for local intelligence — Konative, SpokaneWire, Tolowa Studio, MOTION. Fifteen years of network architecture, now shipping product.
+    </p>
+
+    <!-- CTAs -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:40px;">
+      <a href="#writing"
+         style="background:#c2410c;color:#0A0A0A;padding:10px 20px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;font-weight:600;transition:background 0.1s;"
+         onmouseover="this.style.background='#dc5a1f'" onmouseout="this.style.background='#c2410c'">
+        friday retro →
+      </a>
+      <a href="mailto:jeramey@jerameyjames.com"
+         style="border:1px solid #333333;color:#888888;padding:10px 20px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;transition:all 0.1s;"
+         onmouseover="this.style.borderColor='#c2410c';this.style.color='#E5E5E5'" onmouseout="this.style.borderColor='#333333';this.style.color='#888888'">
+        jeramey@jerameyjames.com →
+      </a>
+    </div>
+
+    <!-- Newsletter -->
+    <div style="border:1px solid #333333;max-width:440px;">
+      <div style="background:#0A0A0A;border-bottom:1px solid #333333;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;">newsletter.subscribe</span>
+        <span style="font-size:11px;color:#555555;">weekly</span>
+      </div>
+      <div style="display:flex;align-items:center;padding:10px 14px;gap:8px;">
+        <span style="color:#c2410c;font-size:14px;flex-shrink:0;">›</span>
+        <input type="email" placeholder="your@email.com" style="font-size:13px;flex:1;">
+        <button
+          style="background:#c2410c;color:#0A0A0A;padding:6px 14px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;border:none;cursor:pointer;white-space:nowrap;font-weight:600;transition:background 0.1s;"
+          onmouseover="this.style.background='#dc5a1f'" onmouseout="this.style.background='#c2410c'">
+          subscribe
+        </button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     TELEMETRY
+═══════════════════════════════════════════ -->
+<section style="padding:64px 24px;border-top:1px solid #333333;">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <!-- Terminal window -->
+    <div style="border:1px solid #333333;">
+
+      <!-- Chrome top bar -->
+      <div style="background:#0A0A0A;border-bottom:1px solid #333333;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:6px;">
+          <span class="term-dot"></span>
+          <span class="term-dot"></span>
+          <span class="term-dot"></span>
+        </div>
+        <span style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:0.2em;">telemetry.log</span>
+        <span style="border:1px solid #4af626;padding:2px 8px;font-size:11px;color:#4af626;text-transform:uppercase;letter-spacing:0.1em;">[live]</span>
+      </div>
+
+      <!-- Metrics grid -->
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);border-bottom:1px solid #333333;" class="metrics-grid">
+        <style>
+          .metrics-grid { grid-template-columns: repeat(2,1fr); }
+          @media(min-width:640px)  { .metrics-grid { grid-template-columns: repeat(3,1fr); } }
+          @media(min-width:1024px) { .metrics-grid { grid-template-columns: repeat(6,1fr); } }
+          .metric-cell { padding:20px 16px; background:#111111; border-right:1px solid #333333; border-bottom:1px solid #333333; }
+          .metric-cell:nth-child(2n)   { border-right:none; }
+          @media(min-width:640px)  {
+            .metric-cell:nth-child(2n)   { border-right:1px solid #333333; }
+            .metric-cell:nth-child(3n)   { border-right:none; }
+          }
+          @media(min-width:1024px) {
+            .metric-cell { border-bottom:none; }
+            .metric-cell:nth-child(3n)   { border-right:1px solid #333333; }
+            .metric-cell:nth-child(6n)   { border-right:none; }
+          }
+        </style>
+
+        <div class="metric-cell">
+          <div style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Products</div>
+          <div style="font-size:28px;font-weight:700;color:#E5E5E5;line-height:1;margin-bottom:6px;">4</div>
+          <div style="font-size:11px;color:#888888;">live</div>
+        </div>
+
+        <div class="metric-cell">
+          <div style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">LinkedIn</div>
+          <div style="font-size:28px;font-weight:700;color:#E5E5E5;line-height:1;margin-bottom:6px;">1,284</div>
+          <div style="font-size:11px;color:#4af626;">+18/wk</div>
+        </div>
+
+        <div class="metric-cell">
+          <div style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Newsletter</div>
+          <div style="font-size:28px;font-weight:700;color:#E5E5E5;line-height:1;margin-bottom:6px;">267</div>
+          <div style="font-size:11px;color:#4af626;">+6/wk</div>
+        </div>
+
+        <div class="metric-cell">
+          <div style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Shipped</div>
+          <div style="font-size:28px;font-weight:700;color:#E5E5E5;line-height:1;margin-bottom:6px;">3/3</div>
+          <div style="font-size:11px;color:#888888;">mon·wed·fri</div>
+        </div>
+
+        <div class="metric-cell">
+          <div style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Self_score</div>
+          <div style="font-size:28px;font-weight:700;color:#4af626;line-height:1;margin-bottom:6px;">82</div>
+          <div style="font-size:11px;color:#888888;">/100</div>
+        </div>
+
+        <div class="metric-cell" style="border-right:none;">
+          <div style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:10px;">Uptime_30d</div>
+          <div style="font-size:28px;font-weight:700;color:#E5E5E5;line-height:1;margin-bottom:6px;">99.97%</div>
+          <div style="font-size:11px;color:#4af626;display:flex;align-items:center;gap:4px;"><span class="dot" style="width:5px;height:5px;"></span> nominal</div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div style="background:#0A0A0A;padding:8px 16px;">
+        <span style="font-size:11px;color:#555555;">// updated <span id="telemetry-time">--:-- PT</span></span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     ABOUT  §01
+═══════════════════════════════════════════ -->
+<section id="about" style="padding:80px 24px;border-top:1px solid #333333;">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <div class="sec-label" style="margin-bottom:32px;">§ 01 — premise</div>
+
+    <div style="display:grid;grid-template-columns:1fr;gap:48px;" class="about-grid">
+      <style>
+        @media(min-width:1024px) { .about-grid { grid-template-columns: 1fr 340px; } }
+      </style>
+
+      <!-- Left: text + pull quote -->
+      <div>
+        <p style="font-size:14px;color:#E5E5E5;line-height:1.8;margin-bottom:20px;">
+          Started in CSP go-to-market — selling fiber buildout to rural carriers that moved at the pace of capital expenditure cycles, not roadmaps. Learned how to talk infrastructure with engineers and ROI with CFOs in the same breath. That gap between the two is where most deals die.
+        </p>
+        <p style="font-size:14px;color:#E5E5E5;line-height:1.8;margin-bottom:20px;">
+          Moved into tribal IT and network architecture. Built systems for sovereign nations with constrained budgets, complex regulatory requirements, and zero tolerance for consultants who couldn't ship. The work was real. The feedback was immediate.
+        </p>
+        <p style="font-size:14px;color:#E5E5E5;line-height:1.8;margin-bottom:40px;">
+          Now running Tolowa Pacific as the base, Konative as the intel layer, SpokaneWire as the local signal experiment, and MOTION as the operating system underneath it all. The through-line: systems that run without someone manually running them.
+        </p>
+
+        <!-- Axiom card -->
+        <div style="border:1px solid #333333;">
+          <div style="background:#0A0A0A;border-bottom:1px solid #333333;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:flex;gap:6px;">
+              <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+            </div>
+            <span style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:0.2em;">axiom.md</span>
+            <span style="font-size:11px;color:#555555;">rev: 001</span>
+          </div>
+          <div style="padding:24px 20px;background:#111111;">
+            <p style="font-size:clamp(15px,2vw,18px);color:#E5E5E5;line-height:1.6;font-style:italic;">
+              "the process of building the system is the content."
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right: motion.stack -->
+      <div style="border:1px solid #333333;align-self:start;">
+        <div style="background:#0A0A0A;border-bottom:1px solid #333333;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;gap:6px;">
+            <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+          </div>
+          <span style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:0.2em;">motion.stack</span>
+          <span style="font-size:11px;color:#555555;">v2</span>
+        </div>
+        <div style="background:#111111;">
+
+          <div style="padding:16px;border-bottom:1px solid #333333;">
+            <div style="font-size:10px;color:#555555;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">Layer 01</div>
+            <div style="font-size:13px;color:#E5E5E5;font-weight:600;margin-bottom:4px;">business_os</div>
+            <div style="font-size:11px;color:#888888;line-height:1.5;">HubSpot · Notion · n8n automation</div>
+          </div>
+
+          <div style="padding:16px;border-bottom:1px solid #333333;">
+            <div style="font-size:10px;color:#555555;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">Layer 02</div>
+            <div style="font-size:13px;color:#E5E5E5;font-weight:600;margin-bottom:4px;">web_os</div>
+            <div style="font-size:11px;color:#888888;line-height:1.5;">Next.js · Vercel · Sanity CMS</div>
+          </div>
+
+          <div style="padding:16px;">
+            <div style="font-size:10px;color:#555555;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:6px;">Layer 03</div>
+            <div style="font-size:13px;color:#E5E5E5;font-weight:600;margin-bottom:4px;">personal_os</div>
+            <div style="font-size:11px;color:#888888;line-height:1.5;">Claude Code · Obsidian · Antigravity</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     WORK  §02
+═══════════════════════════════════════════ -->
+<section id="work" style="padding:80px 24px;border-top:1px solid #333333;">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <div class="sec-label" style="margin-bottom:32px;">§ 02 — work</div>
+
+    <div style="border:1px solid #333333;">
+
+      <!-- Lane template styles -->
+      <style>
+        .lane { display:grid; grid-template-columns:1fr; border-bottom:1px solid #333333; }
+        .lane:last-child { border-bottom:none; }
+        @media(min-width:900px) { .lane { grid-template-columns: 180px 1fr 200px; } }
+        .lane-meta  { padding:20px; background:#111111; border-bottom:1px solid #333333; }
+        .lane-body  { padding:20px; border-bottom:1px solid #333333; }
+        .lane-aside { padding:20px; background:#111111; display:flex; flex-direction:column; justify-content:space-between; }
+        @media(min-width:900px) {
+          .lane-meta  { border-bottom:none; border-right:1px solid #333333; }
+          .lane-body  { border-bottom:none; border-right:1px solid #333333; }
+          .lane-aside { border-bottom:none; }
+        }
+        .tag { border:1px solid #333333; padding:2px 8px; font-size:11px; color:#888888; display:inline-block; margin:2px; }
+        .pillar-num { font-size:10px; color:#555555; text-transform:uppercase; letter-spacing:0.12em; margin-bottom:12px; }
+        .lane-title { font-size:14px; color:#c2410c; text-transform:lowercase; letter-spacing:0.05em; margin-bottom:6px; font-weight:500; }
+        .lane-head  { font-size:15px; color:#E5E5E5; font-weight:700; margin-bottom:10px; line-height:1.4; }
+        .lane-desc  { font-size:12px; color:#888888; line-height:1.75; }
+        .img-placeholder { border:1px solid #333333; width:100%; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; margin-bottom:12px; }
+      </style>
+
+      <!-- Konative -->
+      <div class="lane">
+        <div class="lane-meta">
+          <div class="pillar-num">// 01</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+            <span class="dot"></span>
+            <span style="font-size:11px;color:#4af626;text-transform:uppercase;letter-spacing:0.1em;">live</span>
+          </div>
+          <div><span class="tag">intel</span><span class="tag">data</span><span class="tag">saas</span></div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-title">konative</div>
+          <div class="lane-head">market intel for modular data centers</div>
+          <p class="lane-desc">The hyperscalers aren't your buyers. The regional operators building 1–5MW facilities are. Konative tracks the signal they need to win those deals before RFPs close.</p>
+        </div>
+        <div class="lane-aside">
+          <div class="img-placeholder"><span style="font-size:11px;color:#555555;">konative.com</span></div>
+          <a href="https://konative.com" target="_blank" class="ghost"
+             style="font-size:12px;color:#888888;text-decoration:none;text-align:center;display:block;transition:color 0.1s;"
+             onmouseover="this.style.color='#E5E5E5'" onmouseout="this.style.color='#888888'">konative.com</a>
+        </div>
+      </div>
+
+      <!-- SpokaneWire -->
+      <div class="lane">
+        <div class="lane-meta">
+          <div class="pillar-num">// 02</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+            <span class="dot"></span>
+            <span style="font-size:11px;color:#4af626;text-transform:uppercase;letter-spacing:0.1em;">live</span>
+          </div>
+          <div><span class="tag">local</span><span class="tag">ai</span><span class="tag">safety</span></div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-title">spokanewire</div>
+          <div class="lane-head">hyperlocal AI public safety</div>
+          <p class="lane-desc">Local news died. Public safety information fragmented across scanner feeds, social posts, and agency PR. SpokaneWire reassembles it into a coherent real-time picture.</p>
+        </div>
+        <div class="lane-aside">
+          <div class="img-placeholder"><span style="font-size:11px;color:#555555;">spokanewire.com</span></div>
+          <a href="https://spokanewire.com" target="_blank" class="ghost"
+             style="font-size:12px;color:#888888;text-decoration:none;text-align:center;display:block;transition:color 0.1s;"
+             onmouseover="this.style.color='#E5E5E5'" onmouseout="this.style.color='#888888'">spokanewire.com</a>
+        </div>
+      </div>
+
+      <!-- Tolowa Studio / MOTION -->
+      <div class="lane">
+        <div class="lane-meta">
+          <div class="pillar-num">// 03</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+            <span class="dot"></span>
+            <span style="font-size:11px;color:#4af626;text-transform:uppercase;letter-spacing:0.1em;">live</span>
+          </div>
+          <div><span class="tag">ai</span><span class="tag">os</span><span class="tag">auto</span></div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-title">tolowa_studio / motion</div>
+          <div class="lane-head">AI OS for throughput</div>
+          <p class="lane-desc">The system that runs the other systems. MOTION is the operating layer — scheduled agents, automated publishing, business intelligence, content pipeline. Infrastructure, not a product.</p>
+          <!-- Throughput bar -->
+          <div style="margin-top:20px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.12em;">throughput</span>
+              <span style="font-size:11px;color:#c2410c;">72%</span>
+            </div>
+            <div style="height:3px;background:#333333;width:100%;">
+              <div class="bar-fill"></div>
+            </div>
+          </div>
+        </div>
+        <div class="lane-aside">
+          <div class="img-placeholder"><span style="font-size:11px;color:#555555;">tolowastudio.com</span></div>
+          <a href="https://tolowastudio.com" target="_blank" class="ghost"
+             style="font-size:12px;color:#888888;text-decoration:none;text-align:center;display:block;transition:color 0.1s;"
+             onmouseover="this.style.color='#E5E5E5'" onmouseout="this.style.color='#888888'">tolowastudio.com</a>
+        </div>
+      </div>
+
+      <!-- Tolowa Pacific -->
+      <div class="lane">
+        <div class="lane-meta">
+          <div class="pillar-num">// 04</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+            <span class="dot"></span>
+            <span style="font-size:11px;color:#4af626;text-transform:uppercase;letter-spacing:0.1em;">live</span>
+          </div>
+          <div><span class="tag">csp</span><span class="tag">tribal</span><span class="tag">network</span></div>
+        </div>
+        <div class="lane-body">
+          <div class="lane-title">tolowa_pacific</div>
+          <div class="lane-head">CSP/tribal IT/network consulting, est. 2011</div>
+          <p class="lane-desc">Fifteen years in the infrastructure trenches. Fiber buildout, tribal broadband, carrier-grade network architecture. The consulting arm that funds the product side and keeps the skills sharp.</p>
+        </div>
+        <div class="lane-aside">
+          <div class="img-placeholder"><span style="font-size:11px;color:#555555;">tolowapacific.com</span></div>
+          <a href="https://tolowapacific.com" target="_blank" class="ghost"
+             style="font-size:12px;color:#888888;text-decoration:none;text-align:center;display:block;transition:color 0.1s;"
+             onmouseover="this.style.color='#E5E5E5'" onmouseout="this.style.color='#888888'">tolowapacific.com</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     WRITING  §03
+═══════════════════════════════════════════ -->
+<section id="writing" style="padding:80px 24px;border-top:1px solid #333333;">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <div class="sec-label" style="margin-bottom:8px;">§ 03 — writing</div>
+    <h2 style="font-size:20px;font-weight:700;color:#E5E5E5;margin-bottom:32px;">builder's log</h2>
+
+    <div style="border:1px solid #333333;">
+
+      <div class="log-row">
+        <span style="font-size:11px;color:#555555;width:68px;flex-shrink:0;">26.04.18</span>
+        <span style="border:1px solid #c2410c;padding:2px 8px;font-size:10px;color:#c2410c;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">// retro</span>
+        <span style="font-size:13px;color:#E5E5E5;flex:1;min-width:0;">The Friday Retro is a system, not a habit</span>
+        <span style="font-size:11px;color:#555555;flex-shrink:0;margin-left:auto;">4 min</span>
+      </div>
+
+      <div class="log-row">
+        <span style="font-size:11px;color:#555555;width:68px;flex-shrink:0;">26.04.14</span>
+        <span style="border:1px solid #333333;padding:2px 8px;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">// ai+auto</span>
+        <span style="font-size:13px;color:#E5E5E5;flex:1;min-width:0;">What Claude Code actually changed about how I ship</span>
+        <span style="font-size:11px;color:#555555;flex-shrink:0;margin-left:auto;">6 min</span>
+      </div>
+
+      <div class="log-row">
+        <span style="font-size:11px;color:#555555;width:68px;flex-shrink:0;">26.04.09</span>
+        <span style="border:1px solid #333333;padding:2px 8px;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">// motion</span>
+        <span style="font-size:13px;color:#E5E5E5;flex:1;min-width:0;">MOTION v2: what changed and why it had to</span>
+        <span style="font-size:11px;color:#555555;flex-shrink:0;margin-left:auto;">5 min</span>
+      </div>
+
+      <div class="log-row">
+        <span style="font-size:11px;color:#555555;width:68px;flex-shrink:0;">26.04.02</span>
+        <span style="border:1px solid #333333;padding:2px 8px;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">// stack</span>
+        <span style="font-size:13px;color:#E5E5E5;flex:1;min-width:0;">Why I still deploy to Vercel even when it's the wrong call</span>
+        <span style="font-size:11px;color:#555555;flex-shrink:0;margin-left:auto;">3 min</span>
+      </div>
+
+      <div class="log-row" style="border-bottom:none;">
+        <span style="font-size:11px;color:#555555;width:68px;flex-shrink:0;">26.03.28</span>
+        <span style="border:1px solid #333333;padding:2px 8px;font-size:10px;color:#888888;text-transform:uppercase;letter-spacing:0.1em;flex-shrink:0;">// solo</span>
+        <span style="font-size:13px;color:#E5E5E5;flex:1;min-width:0;">Solo operator math: time, leverage, and what gets cut</span>
+        <span style="font-size:11px;color:#555555;flex-shrink:0;margin-left:auto;">7 min</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     CONTACT  §04
+═══════════════════════════════════════════ -->
+<section id="contact" style="padding:80px 24px;border-top:1px solid #333333;">
+  <div style="max-width:1200px;margin:0 auto;">
+
+    <div class="sec-label" style="margin-bottom:8px;">§ 04 — signal</div>
+    <h2 style="font-size:20px;font-weight:700;color:#E5E5E5;margin-bottom:32px;">
+      dms open.<span class="cursor">▊</span>
+    </h2>
+
+    <!-- Contact card terminal -->
+    <div style="border:1px solid #333333;max-width:480px;margin-bottom:32px;">
+      <div style="background:#0A0A0A;border-bottom:1px solid #333333;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;gap:6px;">
+          <span class="term-dot"></span><span class="term-dot"></span><span class="term-dot"></span>
+        </div>
+        <span style="font-size:11px;color:#888888;text-transform:uppercase;letter-spacing:0.2em;">contact.card</span>
+        <span style="border:1px solid #4af626;padding:2px 8px;font-size:10px;color:#4af626;text-transform:uppercase;letter-spacing:0.1em;">[signal: open]</span>
+      </div>
+      <div style="padding:4px 16px 12px;background:#111111;">
+        <div class="kv">
+          <span class="kv-label">email</span>
+          <a href="mailto:jeramey@jerameyjames.com" class="kv-val"
+             style="text-decoration:none;transition:color 0.1s;"
+             onmouseover="this.style.color='#c2410c'" onmouseout="this.style.color='#E5E5E5'">jeramey@jerameyjames.com</a>
+        </div>
+        <div class="kv">
+          <span class="kv-label">reply_time</span>
+          <span class="kv-val">&lt;48h PT</span>
+        </div>
+        <div class="kv">
+          <span class="kv-label">linkedin</span>
+          <a href="https://linkedin.com/in/jerameyjames" target="_blank" class="kv-val"
+             style="text-decoration:none;transition:color 0.1s;"
+             onmouseover="this.style.color='#c2410c'" onmouseout="this.style.color='#E5E5E5'">linkedin.com/in/jerameyjames</a>
+        </div>
+        <div class="kv">
+          <span class="kv-label">github</span>
+          <a href="https://github.com/jerameyjames" target="_blank" class="kv-val"
+             style="text-decoration:none;transition:color 0.1s;"
+             onmouseover="this.style.color='#c2410c'" onmouseout="this.style.color='#E5E5E5'">github.com/jerameyjames</a>
+        </div>
+        <div class="kv">
+          <span class="kv-label">newsletter</span>
+          <span class="kv-val">friday retro · weekly</span>
+        </div>
+        <div class="kv">
+          <span class="kv-label">signal</span>
+          <span class="kv-val">on request</span>
+        </div>
+        <div class="kv">
+          <span class="kv-label">location</span>
+          <span class="kv-val">N 41.7558° · W 124.2026°</span>
+        </div>
+        <div class="kv" style="border-bottom:none;">
+          <span class="kv-label">status</span>
+          <span class="kv-val" style="display:flex;align-items:center;gap:6px;"><span class="dot"></span> taking new bets</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTAs -->
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+      <a href="mailto:jeramey@jerameyjames.com"
+         style="background:#c2410c;color:#0A0A0A;padding:10px 20px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;font-weight:600;transition:background 0.1s;"
+         onmouseover="this.style.background='#dc5a1f'" onmouseout="this.style.background='#c2410c'">
+        open_ticket →
+      </a>
+      <a href="#writing"
+         style="border:1px solid #333333;color:#888888;padding:10px 20px;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;text-decoration:none;transition:all 0.1s;"
+         onmouseover="this.style.borderColor='#c2410c';this.style.color='#E5E5E5'" onmouseout="this.style.borderColor='#333333';this.style.color='#888888'">
+        read_friday_retro →
+      </a>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer style="border-top:1px solid #333333;padding:28px 24px;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;">
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:22px;height:22px;border:1px solid #333333;display:flex;align-items:center;justify-content:center;">
+        <span style="color:#c2410c;font-size:9px;font-weight:700;">&gt;_</span>
+      </div>
+      <span style="font-size:11px;color:#888888;">© 2026 jeramey_james.os</span>
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;">
+      <span style="border:1px solid #333333;padding:2px 8px;font-size:11px;color:#555555;">crescent city · pnw</span>
+      <span style="border:1px solid #333333;padding:2px 8px;font-size:11px;color:#555555;">built_on: motion</span>
+      <span style="font-size:11px;color:#555555;">rev: 2026.04</span>
+    </div>
+
+    <span style="font-size:11px;color:#555555;">— jj.os.</span>
+
+  </div>
+</footer>
+
+
+<!-- ═══════════════════════════════════════════
+     JS
+═══════════════════════════════════════════ -->
+<script>
+  function updateTelemetryTime() {
+    const now = new Date();
+    const fmt = new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/Los_Angeles',
+      hour: '2-digit', minute: '2-digit', hour12: false
+    });
+    const parts = fmt.formatToParts(now);
+    const h = parts.find(p => p.type === 'hour').value;
+    const m = parts.find(p => p.type === 'minute').value;
+    const el = document.getElementById('telemetry-time');
+    if (el) el.textContent = h + ':' + m + ' PT';
+  }
+  updateTelemetryTime();
+  setInterval(updateTelemetryTime, 30000);
+</script>
+
+</body>
+</html>
